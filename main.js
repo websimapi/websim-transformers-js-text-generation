@@ -4,7 +4,6 @@ import { pipeline } from '@xenova/transformers';
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const chatHistory = document.getElementById('chat-history');
-const statusDiv = document.getElementById('status');
 const chatForm = document.getElementById('chat-form');
 const modelSelect = document.getElementById('model-select');
 const loadModelBtn = document.getElementById('load-model-btn');
@@ -17,12 +16,10 @@ async function initializeGenerator() {
     const selectedModel = modelSelect.value;
     
     try {
-        statusDiv.textContent = `Loading ${selectedModel}... This may take a moment.`;
         loadModelBtn.disabled = true;
         loadModelBtn.textContent = 'Loading...';
         
         generator = await pipeline('text-generation', selectedModel);
-        statusDiv.textContent = `Model ${selectedModel} loaded successfully!`;
         loadModelBtn.textContent = 'Load Model';
         loadModelBtn.disabled = false;
         messageInput.disabled = false;
@@ -35,9 +32,7 @@ async function initializeGenerator() {
         
         addMessageToChat("Hello! I'm a friendly AI assistant. How can I help you today?", 'bot');
     } catch (error) {
-        statusDiv.textContent = `Failed to load ${selectedModel}. Please try again.`;
         loadModelBtn.textContent = 'Load Model';
-        loadModelBtn.disabled = false;
         console.error('Model loading error:', error);
     }
 }
@@ -161,4 +156,4 @@ messageInput.addEventListener('keydown', (e) => {
 
 // Initialize with default model when the script loads
 // Remove the auto-initialization - user must click "Load Model"
-statusDiv.textContent = 'Select a model and click "Load Model" to start chatting.';
+statusDiv.textContent = 'Select a model and click "Load Model" to start chatting.'
