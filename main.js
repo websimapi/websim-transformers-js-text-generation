@@ -18,9 +18,9 @@ async function initializeGenerator() {
         messageInput.disabled = false;
         sendBtn.disabled = false;
         messageInput.placeholder = 'Type your message...';
-        addMessageToChat("Hello! I'm a friendly AI. What would you like to talk about?", 'bot');
+        addMessageToChat("Hello! I'm a friendly AI assistant. How can I help you today?", 'bot');
     } catch (error) {
-        statusDiv.textContent = 'Failed to load model.';
+        statusDiv.textContent = 'Failed to load model. Please refresh the page.';
         console.error('Model loading error:', error);
     }
 }
@@ -67,26 +67,29 @@ async function handleSendMessage(e) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
     try {
-        // Construct the conversation prompt for DialoGPT
-        const conversationText = conversationHistory.slice(-6).join(' '); // Keep last 6 exchanges
-        const prompt = conversationText ? `${conversationText} User: ${userPrompt} AI:` : `User: ${userPrompt} AI:`;
+        // Construct a more natural conversation prompt
+        const recentHistory = conversationHistory.slice(-4).join('\n'); // Keep last 4 exchanges
+        const prompt = recentHistory ? 
+            `${recentHistory}\nHuman: ${userPrompt}\nAssistant:` : 
+            `Human: ${userPrompt}\nAssistant:`;
 
-        // Generate response
+        // Generate response with optimized parameters for chat
         const output = await generator(prompt, { 
-            max_new_tokens: 50,
+            max_new_tokens: 60,
             num_return_sequences: 1,
             do_sample: true,
-            temperature: 0.8,
-            top_k: 40,
-            top_p: 0.9,
-            pad_token_id: 50256
+            temperature: 0.7,
+            top_k: 50,
+            top_p: 0.95,
+            pad_token_id: 50256,
+            eos_token_id: 50256
         });
         
         // Extract the bot's response
         let botResponse = output[0].generated_text.slice(prompt.length).trim();
         
         // Clean up the response - remove any continuation patterns
-        const stopPatterns = ["\nUser:", "\nAI:", "User:", "AI:"];
+        const stopPatterns = ["\nHuman:", "\nAssistant:", "Human:", "Assistant:", "\n\n"];
         for (const pattern of stopPatterns) {
             const index = botResponse.indexOf(pattern);
             if (index > -1) {
@@ -96,16 +99,17 @@ async function handleSendMessage(e) {
         }
         
         // Handle empty or whitespace-only responses
-        if (!botResponse) {
-            botResponse = "I'm sorry, could you rephrase that? I want to make sure I understand you correctly.";
+        if (!botResponse || botResponse.length < 2) {
+            botResponse = "I understand. Could you tell me more about what you'd like to discuss?";
         }
 
         // Update the typing indicator with the actual message
         typingIndicator.textContent = botResponse;
         typingIndicator.classList.remove('typing-indicator');
 
-        // Add bot response to history
-        conversationHistory.push(`AI: ${botResponse}`);
+        // Add bot response to history with better format
+        conversationHistory.push(`Human: ${userPrompt}`);
+        conversationHistory.push(`Assistant: ${botResponse}`);
 
     } catch (error) {
         typingIndicator.textContent = 'Sorry, an error occurred while generating a response.';
