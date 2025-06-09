@@ -13,7 +13,7 @@ let conversationHistory = [];
 // Initialize the text generation pipeline
 async function initializeGenerator() {
     try {
-        generator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-248M');
+        generator = await pipeline('text-generation', 'Xenova/DialoGPT-medium');
         statusDiv.textContent = 'Model loaded. You can now chat with the AI!';
         messageInput.disabled = false;
         sendBtn.disabled = false;
@@ -67,36 +67,37 @@ async function handleSendMessage(e) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
     try {
-        // Construct the full prompt from conversation history
-        const prompt = `You are a helpful AI assistant. Have a natural conversation with the user.\n\n${conversationHistory.join('\n')}\nAI:`;
+        // Construct the conversation prompt for DialoGPT
+        const conversationText = conversationHistory.slice(-6).join(' '); // Keep last 6 exchanges
+        const prompt = conversationText ? `${conversationText} User: ${userPrompt} AI:` : `User: ${userPrompt} AI:`;
 
         // Generate response
         const output = await generator(prompt, { 
-            max_new_tokens: 80,
+            max_new_tokens: 50,
             num_return_sequences: 1,
             do_sample: true,
-            temperature: 0.7,
-            top_k: 50,
+            temperature: 0.8,
+            top_k: 40,
+            top_p: 0.9,
+            pad_token_id: 50256
         });
         
         // Extract the bot's response
         let botResponse = output[0].generated_text.slice(prompt.length).trim();
         
-        // Sometimes the model continues the conversation for the user. Cut it off.
-        const userTurnSignal = "\nUser:";
-        const aiTurnSignal = "\nAI:";
-        const firstSignalIndex = Math.min(
-            botResponse.indexOf(userTurnSignal) > -1 ? botResponse.indexOf(userTurnSignal) : Infinity,
-            botResponse.indexOf(aiTurnSignal) > -1 ? botResponse.indexOf(aiTurnSignal) : Infinity
-        );
-
-        if (firstSignalIndex !== Infinity) {
-            botResponse = botResponse.substring(0, firstSignalIndex).trim();
+        // Clean up the response - remove any continuation patterns
+        const stopPatterns = ["\nUser:", "\nAI:", "User:", "AI:"];
+        for (const pattern of stopPatterns) {
+            const index = botResponse.indexOf(pattern);
+            if (index > -1) {
+                botResponse = botResponse.substring(0, index).trim();
+                break;
+            }
         }
         
         // Handle empty or whitespace-only responses
         if (!botResponse) {
-            botResponse = "I'm not sure how to respond to that. Could you try rephrasing?";
+            botResponse = "I'm sorry, could you rephrase that? I want to make sure I understand you correctly.";
         }
 
         // Update the typing indicator with the actual message
