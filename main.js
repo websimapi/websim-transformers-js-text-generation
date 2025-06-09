@@ -156,4 +156,4 @@ messageInput.addEventListener('keydown', (e) => {
 
 // Initialize with default model when the script loads
 // Remove the auto-initialization - user must click "Load Model"
-statusDiv.textContent = 'Select a model and click "Load Model" to start chatting.'
+// Remove the line referencing undefined statusDiv
