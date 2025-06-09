@@ -13,7 +13,7 @@ let conversationHistory = [];
 // Initialize the text generation pipeline
 async function initializeGenerator() {
     try {
-        generator = await pipeline('text-generation', 'Xenova/distilgpt2');
+        generator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-248M');
         statusDiv.textContent = 'Model loaded. You can now chat with the AI!';
         messageInput.disabled = false;
         sendBtn.disabled = false;
@@ -68,11 +68,11 @@ async function handleSendMessage(e) {
 
     try {
         // Construct the full prompt from conversation history
-        const prompt = conversationHistory.join('\n') + '\nAI:';
+        const prompt = `You are a helpful AI assistant. Have a natural conversation with the user.\n\n${conversationHistory.join('\n')}\nAI:`;
 
         // Generate response
         const output = await generator(prompt, { 
-            max_new_tokens: 60,
+            max_new_tokens: 80,
             num_return_sequences: 1,
             do_sample: true,
             temperature: 0.7,
