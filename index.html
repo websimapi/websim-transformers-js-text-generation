@@ -17,8 +17,15 @@
     <div class="chat-wrapper">
         <h1>AI Chatbot</h1>
         
-        <div id="status">Loading model... This may take a moment.</div>
-        
+        <div class="model-selector">
+            <label for="model-select">Choose Model:</label>
+            <select id="model-select">
+                <option value="Xenova/distilgpt2">DistilGPT2 (Fast, ~80MB)</option>
+                <option value="Xenova/tiny-random-LlamaForCausalLM">Tiny LLaMA (Testing, ~5MB)</option>
+            </select>
+            <button id="load-model-btn">Load Model</button>
+        </div>
+
         <div id="chat-history">
             <!-- Messages will be appended here -->
         </div>

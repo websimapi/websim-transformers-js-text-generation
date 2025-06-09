@@ -6,21 +6,38 @@ const sendBtn = document.getElementById('send-btn');
 const chatHistory = document.getElementById('chat-history');
 const statusDiv = document.getElementById('status');
 const chatForm = document.getElementById('chat-form');
+const modelSelect = document.getElementById('model-select');
+const loadModelBtn = document.getElementById('load-model-btn');
 
 let generator = null;
 let conversationHistory = [];
 
 // Initialize the text generation pipeline
 async function initializeGenerator() {
+    const selectedModel = modelSelect.value;
+    
     try {
-        generator = await pipeline('text-generation', 'Xenova/distilgpt2');
-        statusDiv.textContent = 'Model loaded. You can now chat with the AI!';
+        statusDiv.textContent = `Loading ${selectedModel}... This may take a moment.`;
+        loadModelBtn.disabled = true;
+        loadModelBtn.textContent = 'Loading...';
+        
+        generator = await pipeline('text-generation', selectedModel);
+        statusDiv.textContent = `Model ${selectedModel} loaded successfully!`;
+        loadModelBtn.textContent = 'Load Model';
+        loadModelBtn.disabled = false;
         messageInput.disabled = false;
         sendBtn.disabled = false;
         messageInput.placeholder = 'Type your message...';
+        
+        // Clear chat history when loading new model
+        chatHistory.innerHTML = '';
+        conversationHistory = [];
+        
         addMessageToChat("Hello! I'm a friendly AI assistant. How can I help you today?", 'bot');
     } catch (error) {
-        statusDiv.textContent = 'Failed to load model. Please refresh the page.';
+        statusDiv.textContent = `Failed to load ${selectedModel}. Please try again.`;
+        loadModelBtn.textContent = 'Load Model';
+        loadModelBtn.disabled = false;
         console.error('Model loading error:', error);
     }
 }
@@ -125,6 +142,7 @@ async function handleSendMessage(e) {
 
 // Event Listeners
 chatForm.addEventListener('submit', handleSendMessage);
+loadModelBtn.addEventListener('click', initializeGenerator);
 
 // Auto-grow textarea
 messageInput.addEventListener('input', () => {
@@ -141,5 +159,6 @@ messageInput.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize the generator when the script loads
-initializeGenerator();
+// Initialize with default model when the script loads
+// Remove the auto-initialization - user must click "Load Model"
+statusDiv.textContent = 'Select a model and click "Load Model" to start chatting.';
