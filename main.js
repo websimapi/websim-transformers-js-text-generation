@@ -13,7 +13,7 @@ let conversationHistory = [];
 // Initialize the text generation pipeline
 async function initializeGenerator() {
     try {
-        generator = await pipeline('text-generation', 'Xenova/DialoGPT-medium');
+        generator = await pipeline('text-generation', 'Xenova/distilgpt2');
         statusDiv.textContent = 'Model loaded. You can now chat with the AI!';
         messageInput.disabled = false;
         sendBtn.disabled = false;
