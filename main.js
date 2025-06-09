@@ -87,14 +87,14 @@ async function handleSendMessage(e) {
 
         // Generate response with optimized parameters for chat
         const output = await generator(prompt, { 
-            max_new_tokens: 60,
+            max_new_tokens: 80,
             num_return_sequences: 1,
             do_sample: true,
-            temperature: 0.7,
-            top_k: 50,
-            top_p: 0.95,
-            pad_token_id: 50256,
-            eos_token_id: 50256
+            temperature: 0.8,
+            top_k: 40,
+            top_p: 0.9,
+            pad_token_id: generator.tokenizer.pad_token_id || 50256,
+            eos_token_id: generator.tokenizer.eos_token_id || 50256
         });
         
         // Extract the bot's response
